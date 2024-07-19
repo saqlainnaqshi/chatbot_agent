@@ -108,7 +108,7 @@ async def get_response(user_message):
         tools,
         llm=llm,
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True,
+        # verbose=True,
         handle_parsing_errors=True,
         agent_kwargs={
             "suffix": SUFFIX,
