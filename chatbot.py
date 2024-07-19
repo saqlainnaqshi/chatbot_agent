@@ -117,7 +117,7 @@ async def get_response(user_message):
     )
 
     formatted_prompt = prompt.format(question=user_message, chat_history=conversation_history)
-    result = agent.invoke({"input": formatted_prompt})
+    result = agent.invoke({"input": 'formatted_prompt'})
 
     # result = agent(prompt.format(question=user_message, chat_history=conversation_history))
     response = result["output"]
