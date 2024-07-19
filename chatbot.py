@@ -120,7 +120,7 @@ async def get_response(user_message):
     result = agent.invoke({"input": formatted_prompt})
 
     # result = agent(prompt.format(question=user_message, chat_history=conversation_history))
-    # response = result["output"]
+    response = result["output"]
 
     # conversation_history.append(HumanMessage(user_message))
     # conversation_history.append(SystemMessage(content=response))
