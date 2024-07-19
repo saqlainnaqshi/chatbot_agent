@@ -84,7 +84,7 @@ async def get_response(user_message):
     Observation: the result of the action
     Final Answer: the final answer
     '''
-   If you don't know the answer then use the tool and priority of tools is knowlege base then DuckDuckGo Search.
+    If you don't know the answer then use the tool and priority of tools is knowlege base then DuckDuckGo Search.
         
     Don't try searching anything in the context. Only use it as source of information to write the response.
     
@@ -101,7 +101,7 @@ async def get_response(user_message):
 
     prompt = PromptTemplate(
         template=FORMAT_INSTRUCTIONS,
-        input_variables=["question", "chat_history"],
+        input_variables=["question", "chat_history", "input"],
     )
 
     agent = initialize_agent(
@@ -119,7 +119,7 @@ async def get_response(user_message):
     # formatted_prompt = prompt.format(question=user_message, chat_history=conversation_history)
     # result = agent.invoke({"input": formatted_prompt})
 
-    result = agent(prompt.format(question=user_message, chat_history=conversation_history))
+    result = agent(prompt.format(question=user_message, chat_history=conversation_history, input='hello'))
     response = result["output"]
 
     # conversation_history.append(HumanMessage(user_message))
