@@ -2,15 +2,15 @@ import os
 from dotenv import load_dotenv
 from langchain import PromptTemplate
 from langchain_community.vectorstores import Chroma
-# from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI, HarmBlockThreshold, HarmCategory
 from langchain.agents import Tool, AgentType, initialize_agent
 from langchain.utilities import DuckDuckGoSearchAPIWrapper
-# from langchain.memory import ConversationBufferMemory
-# from langchain_core.messages import HumanMessage, SystemMessage
+from langchain.memory import ConversationBufferMemory
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain.tools.retriever import create_retriever_tool
 from typing import List, Optional
-# from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 async def get_response(user_message):
 
@@ -37,7 +37,7 @@ async def get_response(user_message):
         collection_name="butterySmooth",
     )
 
-    retriever = vectorstore_disk.as_retriever(search_kwargs={"k": 1})
+    retriever = vectorstore_disk.as_retriever(search_kwargs={"k": 3})
 
     llm = ChatGoogleGenerativeAI(
         model="gemini-pro",
@@ -101,7 +101,7 @@ async def get_response(user_message):
 
     prompt = PromptTemplate(
         template=FORMAT_INSTRUCTIONS,
-        input_variables=["question", "chat_history", "input"],
+        input_variables=["question", "chat_history"],
     )
 
     agent = initialize_agent(
@@ -119,7 +119,7 @@ async def get_response(user_message):
     # formatted_prompt = prompt.format(question=user_message, chat_history=conversation_history)
     # result = agent.invoke({"input": formatted_prompt})
 
-    result = agent(prompt.format(question=user_message, chat_history=conversation_history, input='hello'))
+    result = agent(prompt.format(question=user_message, chat_history=conversation_history))
     response = result["output"]
 
     # conversation_history.append(HumanMessage(user_message))
