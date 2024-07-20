@@ -17,6 +17,7 @@ async def chat():
       return jsonify({"error": "No message provided"}), 400
 
     response = await get_response(user_message)
+    
     return jsonify({"response": response})
   except Exception as e:
     return jsonify({"error": f"Internal server error: {str(e)}"}), 500
