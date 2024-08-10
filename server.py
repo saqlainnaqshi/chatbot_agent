@@ -37,8 +37,8 @@ def get_quick_replies():
                 "value": "Where is Kashmir"
             },
             {
-                "title": "Which places should i visit in kashmir",
-                "value": "Which places should i visit in kashmir"
+                "title": "Generate a 3 day itinerary to treks in kashmir",
+                "value": "Generate a 3 day itinerary to treks in kashmir"
             }
         ]
     }

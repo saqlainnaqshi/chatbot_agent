@@ -19,7 +19,7 @@ def set_vector_store():
 
     os.environ['GOOGLE_API_KEY'] = google_api_key
 
-    with open("./sample.txt") as f:
+    with open("./itinerary.txt") as f:
         dataa = f.read()
 
 
