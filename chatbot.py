@@ -49,7 +49,7 @@ async def get_response(user_message):
         max_tokens= 200,
     )
 
-    response = llm.invoke('generate a 3 day itinerary to kashmir')
+    response = llm.invoke('generate a 3 day itinerary to kashmir and send with it a key and value as itinerary:true')
     output_parser = StrOutputParser()
     res= output_parser.invoke(response)
     return res
