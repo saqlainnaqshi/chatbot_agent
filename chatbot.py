@@ -264,16 +264,23 @@ async def get_response(user_message: str) -> str:
         # Ensure the environment variable is set in the runtime
         os.environ['GOOGLE_API_KEY'] = google_api_key
 
-        # Define custom embedding wrapper
+        # # Define custom embedding wrapper
+        # class CustomGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
+        #     def embed_documents(
+        #         self, texts: List[str], task_type: Optional[str] = None,
+        #         titles: Optional[List[str]] = None, output_dimensionality: Optional[int] = None
+        #     ) -> List[List[float]]:
+        #         embeddings_repeated = super().embed_documents(
+        #             texts, task_type, titles, output_dimensionality
+        #         )
+        #         return [list(emb) for emb in embeddings_repeated]
+
+
         class CustomGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
-            def embed_documents(
-                self, texts: List[str], task_type: Optional[str] = None,
-                titles: Optional[List[str]] = None, output_dimensionality: Optional[int] = None
-            ) -> List[List[float]]:
-                embeddings_repeated = super().embed_documents(
-                    texts, task_type, titles, output_dimensionality
-                )
-                return [list(emb) for emb in embeddings_repeated]
+            def embed_documents(self, texts: List[str], *, task_type: Optional[str] = None) -> List[List[float]]:
+                embeddings = super().embed_documents(texts=texts, task_type=task_type)
+                return [list(emb) for emb in embeddings]
+
 
         # Set up the vector store using Chroma
         gemini_embeddings_wrapper = CustomGoogleGenerativeAIEmbeddings(model="models/embedding-001")
