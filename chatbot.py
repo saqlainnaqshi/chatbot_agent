@@ -50,9 +50,9 @@ async def get_response(user_message):
     )
 
     response = llm.invoke('if asked about an itinerary generate a 3 day itinerary to kashmir and send with it a key and value as itinerary:true :',user_message )
-    output_parser = StrOutputParser()
-    res= output_parser.invoke(response)
-    return res
+    # output_parser = StrOutputParser()
+    # res= output_parser.invoke(response)
+    return response
 
 
     ddg_search = DuckDuckGoSearchAPIWrapper()
@@ -122,7 +122,7 @@ async def get_response(user_message):
     agent = initialize_agent(
         tools,
         llm=llm,
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+        agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
         verbose=True,
         handle_parsing_errors=True,
         agent_kwargs={
