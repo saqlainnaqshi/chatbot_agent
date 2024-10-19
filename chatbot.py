@@ -236,70 +236,585 @@
 
 
 
+# import os
+# from dotenv import load_dotenv
+# from langchain import PromptTemplate
+# from langchain_community.vectorstores import Chroma
+# from langchain_google_genai import (
+#     GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+# )
+# from langchain.agents import Tool, AgentType, initialize_agent
+# from langchain.utilities import DuckDuckGoSearchAPIWrapper
+# from langchain.tools.retriever import create_retriever_tool
+# from typing import List, Optional
+# import logging
+
+# # Initialize logging to debug on Heroku
+# logging.basicConfig(level=logging.INFO)
+
+# async def get_response(user_message: str) -> str:
+#     try:
+#         load_dotenv()  # Load environment variables
+
+#         # Get Google API key from the environment
+#         google_api_key = os.getenv('GOOGLE_API_KEY')
+#         if not google_api_key:
+#             raise ValueError("Google API Key not found. Set it in the .env file.")
+
+#         # Ensure the environment variable is set in the runtime
+#         os.environ['GOOGLE_API_KEY'] = google_api_key
+
+#         # Define custom embedding wrapper
+#         # class CustomGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
+#         #     def embed_documents(
+#         #         self, texts: List[str], task_type: Optional[str] = None,
+#         #         titles: Optional[List[str]] = None, output_dimensionality: Optional[int] = None
+#         #     ) -> List[List[float]]:
+#         #         embeddings_repeated = super().embed_documents(
+#         #             texts, task_type, titles, output_dimensionality
+#         #         )
+#         #         return [list(emb) for emb in embeddings_repeated]
+
+
+#         class CustomGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
+#             def embed_documents(self, texts: List[str]) -> List[List[float]]:
+#                 # Call the parent class's embed_documents method
+#                 embeddings = super().embed_documents(texts)
+#                 # Process the embeddings as needed
+#                 return [list(emb) for emb in embeddings]
+
+
+
+#         # Set up the vector store using Chroma
+#         gemini_embeddings_wrapper = CustomGoogleGenerativeAIEmbeddings(model="models/embedding-001")
+#         vectorstore_disk = Chroma(
+#             persist_directory="./chroma_db",
+#             embedding_function=gemini_embeddings_wrapper,
+#             collection_name="butterySmooth"
+#         )
+
+#         # Initialize retriever with a fallback value for 'k'
+#         retriever = vectorstore_disk.as_retriever(search_kwargs={"k": 3})
+
+#         # Set up the Language Model (LLM) using Google Gemini
+#         llm = ChatGoogleGenerativeAI(
+#             model="gemini-pro",
+#             handle_parsing_errors=True,
+#             temperature=0.2,
+#             top_p=0.85,
+#             max_tokens=200,
+#         )
+
+#         # Set up DuckDuckGo Search Tool
+#         ddg_search = DuckDuckGoSearchAPIWrapper()
+
+#         # Define tools including the retriever
+#         tools = [
+#             Tool(
+#                 name="DuckDuckGo Search",
+#                 func=ddg_search.run,
+#                 description="Browse the internet for information."
+#             ),
+#             create_retriever_tool(
+#                 retriever,
+#                 name="Knowledge Base",
+#                 description="Use for itinerary generation for Kashmir."
+#             )
+#         ]
+
+#         # Conversation history as a list of previous interactions
+#         conversation_history = []
+
+#         # Define Prompt Template
+#         FORMAT_INSTRUCTIONS = """
+#         Generate a response to user query:
+#         {query}
+
+#         Use this chat history:
+#         {chat_history}
+
+#         Use tools if needed:
+#         '''
+#         Thought: Do I need to use a tool? Yes
+#         Action: <tool_name>
+#         Action Input: <input>
+#         Observation: <result>
+#         Final Answer: <answer>
+#         '''
+#         """
+#         PREFIX = "You are an intelligent assistant named Kashmiri Guide, created by Saqlain Naqshi."
+#         SUFFIX = "Begin!\n\nInstructions: {input}\n{agent_scratchpad}"
+
+#         prompt = PromptTemplate(
+#             template=FORMAT_INSTRUCTIONS,
+#             input_variables=["query", "chat_history"],
+#         )
+
+#         # Initialize the agent with tools and LLM
+#         agent = initialize_agent(
+#             tools,
+#             llm=llm,
+#             agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+#             verbose=True,
+#             handle_parsing_errors=True,
+#             agent_kwargs={"prefix": PREFIX, "suffix": SUFFIX}
+#         )
+
+#         # Format the input to the prompt
+#         formatted_prompt = prompt.format(
+#             query=user_message, 
+#             chat_history=conversation_history or "No previous history."
+#         )
+
+#         # Invoke the agent and get the response
+#         result = agent.invoke({"input": formatted_prompt})
+#         response = result.get("output", "No output generated.")
+
+#     except Exception as e:
+#         # Log any errors to assist debugging
+#         logging.error(f"Error generating response: {str(e)}")
+#         response = f"Error: {str(e)}"
+
+#     return response
+
+
+
+
+
+# import os
+# from dotenv import load_dotenv
+# from langchain import PromptTemplate
+# from langchain_community.vectorstores import Chroma
+# from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+# from langchain.agents import Tool, AgentType, initialize_agent
+# from langchain.utilities import DuckDuckGoSearchAPIWrapper
+# from langchain.tools.retriever import create_retriever_tool
+# import logging
+
+# # Initialize logging for debugging
+# logging.basicConfig(level=logging.INFO)
+
+# async def get_response(user_message: str) -> str:
+#     try:
+#         load_dotenv()  # Load environment variables
+
+#         # Ensure API key is loaded
+#         google_api_key = os.getenv('GOOGLE_API_KEY')
+#         if not google_api_key:
+#             raise ValueError("Google API Key not found. Set it in the .env file.")
+
+#         os.environ['GOOGLE_API_KEY'] = google_api_key
+
+#         # Use the standard GoogleGenerativeAIEmbeddings
+#         gemini_embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+
+#         # Set up Chroma for vector storage and retrieval
+#         vectorstore_disk = Chroma(
+#             persist_directory="./chroma_db",
+#             embedding_function=gemini_embeddings,
+#             collection_name="butterySmooth"
+#         )
+
+#         # Use the retriever from the vector store
+#         retriever = vectorstore_disk.as_retriever(search_kwargs={"k": 3})
+
+#         # Set up the Google Gemini Pro LLM
+#         llm = ChatGoogleGenerativeAI(
+#             model="gemini-pro",
+#             temperature=0.2,
+#             top_p=0.85,
+#             max_tokens=200
+#         )
+
+#         # DuckDuckGo Search Tool
+#         ddg_search = DuckDuckGoSearchAPIWrapper()
+
+#         # Define tools including retriever
+#         tools = [
+#             Tool(
+#                 name="DuckDuckGo Search",
+#                 func=ddg_search.run,
+#                 description="Browse the internet for information."
+#             ),
+#             create_retriever_tool(
+#                 retriever,
+#                 name="Knowledge Base",
+#                 description="Use for information retrieval"
+#             )
+#         ]
+
+#         # Conversation history as a list of previous interactions
+#         conversation_history = []
+
+#         # Define the prompt template
+#         FORMAT_INSTRUCTIONS = """
+#         Generate a response to the user query:
+#         {query}
+
+#         Use this chat history if relevant:
+#         {chat_history}
+
+#         Use tools if needed:
+#         '''
+#         Thought: Do I need to use a tool? Yes
+#         Action: <tool_name>
+#         Action Input: <input>
+#         Observation: <result>
+#         Final Answer: <answer>
+#         '''
+#         """
+#         PREFIX = "You are an intelligent assistant named Kashmiri Guide."
+#         SUFFIX = "Begin!\n\nInstructions: {input}\n{agent_scratchpad}"
+
+#         prompt = PromptTemplate(
+#             template=FORMAT_INSTRUCTIONS,
+#             input_variables=["query", "chat_history"]
+#         )
+
+#         # Initialize the conversational agent
+#         agent = initialize_agent(
+#             tools=tools,
+#             llm=llm,
+#             agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+#             verbose=True,
+#             handle_parsing_errors=True,
+#             agent_kwargs={"prefix": PREFIX, "suffix": SUFFIX}
+#         )
+
+#         # Format the input to the prompt
+#         formatted_prompt = prompt.format(
+#             query=user_message, 
+#             chat_history=conversation_history or "No previous history."
+#         )
+
+#         # Get the response from the agent
+#         result = agent.invoke({"input": formatted_prompt})
+#         response = result.get("output", "No output generated.")
+
+#     except Exception as e:
+#         logging.error(f"Error generating response: {str(e)}")
+#         response = f"Error: {str(e)}"
+
+#     return response
+
+
+
+
+# import os
+# from dotenv import load_dotenv
+# from langchain import PromptTemplate
+# from langchain_community.vectorstores import Chroma
+# from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+# from langchain.agents import Tool, AgentType, initialize_agent
+# from langchain.utilities import DuckDuckGoSearchAPIWrapper
+# from langchain.tools.retriever import create_retriever_tool
+# from typing import List, Optional
+# import logging
+
+# # Initialize logging for debugging
+# logging.basicConfig(level=logging.INFO)
+
+# class CustomGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
+#     def embed_documents(self, texts: List[str]) -> List[List[float]]:
+#         # Use the parent class's embed_documents method to get embeddings
+#         embeddings = super().embed_documents(texts)
+        
+#         # Flatten the embeddings if they are nested lists
+#         flattened_embeddings = [embedding[0] if isinstance(embedding, list) and len(embedding) == 1 else embedding for embedding in embeddings]
+        
+#         return flattened_embeddings
+
+# async def get_response(user_message: str) -> str:
+#     try:
+#         load_dotenv()  # Load environment variables
+
+#         # Ensure API key is loaded
+#         google_api_key = os.getenv('GOOGLE_API_KEY')
+#         if not google_api_key:
+#             raise ValueError("Google API Key not found. Set it in the .env file.")
+
+#         os.environ['GOOGLE_API_KEY'] = google_api_key
+
+#         # Use the custom GoogleGenerativeAIEmbeddings
+#         gemini_embeddings = CustomGoogleGenerativeAIEmbeddings(model="models/embedding-001")
+
+#         # Set up Chroma for vector storage and retrieval
+#         vectorstore_disk = Chroma(
+#             persist_directory="./chroma_db",
+#             embedding_function=gemini_embeddings,
+#             collection_name="butterySmooth"
+#         )
+
+#         # Use the retriever from the vector store
+#         retriever = vectorstore_disk.as_retriever(search_kwargs={"k": 3})
+
+#         # Set up the Google Gemini Pro LLM
+#         llm = ChatGoogleGenerativeAI(
+#             model="gemini-pro",
+#             temperature=0.2,
+#             top_p=0.85,
+#             max_tokens=200
+#         )
+
+#         # DuckDuckGo Search Tool
+#         ddg_search = DuckDuckGoSearchAPIWrapper()
+
+#         # Define tools including retriever
+#         tools = [
+#             Tool(
+#                 name="DuckDuckGo Search",
+#                 func=ddg_search.run,
+#                 description="Browse the internet for information."
+#             ),
+#             create_retriever_tool(
+#                 retriever,
+#                 name="Knowledge Base",
+#                 description="Use for information retrieval"
+#             )
+#         ]
+
+#         # Conversation history as a list of previous interactions
+#         conversation_history = []
+
+#         # Define the prompt template
+#         FORMAT_INSTRUCTIONS = """
+#         Generate a response to the user query:
+#         {query}
+
+#         Use this chat history if relevant:
+#         {chat_history}
+
+#         Use tools if needed:
+#         '''
+#         Thought: Do I need to use a tool? Yes
+#         Action: <tool_name>
+#         Action Input: <input>
+#         Observation: <result>
+#         Final Answer: <answer>
+#         '''
+#         """
+#         PREFIX = "You are an intelligent assistant named Kashmiri Guide."
+#         SUFFIX = "Begin!\n\nInstructions: {input}\n{agent_scratchpad}"
+
+#         prompt = PromptTemplate(
+#             template=FORMAT_INSTRUCTIONS,
+#             input_variables=["query", "chat_history"]
+#         )
+
+#         # Initialize the conversational agent
+#         agent = initialize_agent(
+#             tools=tools,
+#             llm=llm,
+#             agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+#             verbose=True,
+#             handle_parsing_errors=True,
+#             agent_kwargs={"prefix": PREFIX, "suffix": SUFFIX}
+#         )
+
+#         # Format the input to the prompt
+#         formatted_prompt = prompt.format(
+#             query=user_message, 
+#             chat_history=conversation_history or "No previous history."
+#         )
+
+#         # Get the response from the agent
+#         result = agent.invoke({"input": formatted_prompt})
+#         response = result.get("output", "No output generated.")
+
+#     except Exception as e:
+#         logging.error(f"Error generating response: {str(e)}")
+#         response = f"Error: {str(e)}"
+
+#     return response
+
+
+
+
+# import os
+# from dotenv import load_dotenv
+# from langchain import PromptTemplate
+# from langchain_community.vectorstores import Chroma
+# from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+# from langchain.agents import Tool, AgentType, initialize_agent
+# from langchain.utilities import DuckDuckGoSearchAPIWrapper
+# from langchain.tools.retriever import create_retriever_tool
+# from typing import List
+# import logging
+
+# # Initialize logging for debugging
+# logging.basicConfig(level=logging.INFO)
+
+# class CustomGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
+#     def embed_documents(self, texts: List[str]) -> List[List[float]]:
+#         # Call the parent class's embed_documents method with only the required parameters
+#         embeddings_repeated = super().embed_documents(texts)
+#         # Ensure the embeddings are in the expected format
+#         return [list(emb) for emb in embeddings_repeated]
+
+# async def get_response(user_message: str) -> str:
+#     try:
+#         load_dotenv()  # Load environment variables
+
+#         # Ensure API key is loaded
+#         google_api_key = os.getenv('GOOGLE_API_KEY')
+#         if not google_api_key:
+#             raise ValueError("Google API Key not found. Set it in the .env file.")
+
+#         os.environ['GOOGLE_API_KEY'] = google_api_key
+
+#         # Use the custom embedding wrapper
+#         gemini_embeddings = CustomGoogleGenerativeAIEmbeddings(model="models/embedding-001")
+
+#         # Set up Chroma for vector storage and retrieval
+#         vectorstore_disk = Chroma(
+#             persist_directory="./chroma_db",
+#             embedding_function=gemini_embeddings,
+#             collection_name="butterySmooth"
+#         )
+
+#         # Use the retriever from the vector store
+#         retriever = vectorstore_disk.as_retriever(search_kwargs={"k": 3})
+
+#         # Set up the Google Gemini Pro LLM
+#         llm = ChatGoogleGenerativeAI(
+#             model="gemini-pro",
+#             temperature=0.2,
+#             top_p=0.85,
+#             max_tokens=200
+#         )
+
+#         # DuckDuckGo Search Tool
+#         ddg_search = DuckDuckGoSearchAPIWrapper()
+
+#         # Define tools including retriever
+#         tools = [
+#             Tool(
+#                 name="DuckDuckGo Search",
+#                 func=ddg_search.run,
+#                 description="Browse the internet for information."
+#             ),
+#             create_retriever_tool(
+#                 retriever,
+#                 name="Knowledge Base",
+#                 description="Use for information retrieval"
+#             )
+#         ]
+
+#         # Conversation history as a list of previous interactions
+#         conversation_history = []
+
+#         # Define the prompt template
+#         FORMAT_INSTRUCTIONS = """
+#         Generate a response to the user query:
+#         {query}
+
+#         Use this chat history if relevant:
+#         {chat_history}
+
+#         Use tools if needed:
+#         '''
+#         Thought: Do I need to use a tool? Yes
+#         Action: <tool_name>
+#         Action Input: <input>
+#         Observation: <result>
+#         Final Answer: <answer>
+#         '''
+#         """
+#         PREFIX = "You are an intelligent assistant named Kashmiri Guide."
+#         SUFFIX = "Begin!\n\nInstructions: {input}\n{agent_scratchpad}"
+
+#         prompt = PromptTemplate(
+#             template=FORMAT_INSTRUCTIONS,
+#             input_variables=["query", "chat_history"]
+#         )
+
+#         # Initialize the conversational agent
+#         agent = initialize_agent(
+#             tools=tools,
+#             llm=llm,
+#             agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+#             verbose=True,
+#             handle_parsing_errors=True,
+#             agent_kwargs={"prefix": PREFIX, "suffix": SUFFIX}
+#         )
+
+#         # Format the input to the prompt
+#         formatted_prompt = prompt.format(
+#             query=user_message, 
+#             chat_history=conversation_history or "No previous history."
+#         )
+
+#         # Get the response from the agent
+#         result = agent.invoke({"input": formatted_prompt})
+#         response = result.get("output", "No output generated.")
+
+#     except Exception as e:
+#         logging.error(f"Error generating response: {str(e)}")
+#         response = f"Error: {str(e)}"
+
+#     return response
+
+
+
+
+
 import os
 from dotenv import load_dotenv
 from langchain import PromptTemplate
 from langchain_community.vectorstores import Chroma
-from langchain_google_genai import (
-    GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-)
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain.agents import Tool, AgentType, initialize_agent
 from langchain.utilities import DuckDuckGoSearchAPIWrapper
 from langchain.tools.retriever import create_retriever_tool
-from typing import List, Optional
 import logging
+from typing import List, Any
 
-# Initialize logging to debug on Heroku
+# Initialize logging for debugging
 logging.basicConfig(level=logging.INFO)
+
+class CustomGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
+    def embed_documents(self, texts: List[str], **kwargs: Any) -> List[List[float]]:
+        # Call the parent class's embed_documents method with only the required parameters
+        embeddings_repeated = super().embed_documents(texts)
+        # Ensure the embeddings are in the expected format
+        return [list(emb) for emb in embeddings_repeated]
 
 async def get_response(user_message: str) -> str:
     try:
         load_dotenv()  # Load environment variables
 
-        # Get Google API key from the environment
+        # Ensure API key is loaded
         google_api_key = os.getenv('GOOGLE_API_KEY')
         if not google_api_key:
             raise ValueError("Google API Key not found. Set it in the .env file.")
 
-        # Ensure the environment variable is set in the runtime
         os.environ['GOOGLE_API_KEY'] = google_api_key
 
-        # Define custom embedding wrapper
-        class CustomGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
-            def embed_documents(
-                self, texts: List[str], task_type: Optional[str] = None,
-                titles: Optional[List[str]] = None, output_dimensionality: Optional[int] = None
-            ) -> List[List[float]]:
-                embeddings_repeated = super().embed_documents(
-                    texts, task_type, titles, output_dimensionality
-                )
-                return [list(emb) for emb in embeddings_repeated]
+        # Use the custom embedding wrapper
+        gemini_embeddings = CustomGoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
-
-        # Set up the vector store using Chroma
-        gemini_embeddings_wrapper = CustomGoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        # Set up Chroma for vector storage and retrieval
         vectorstore_disk = Chroma(
             persist_directory="./chroma_db",
-            embedding_function=gemini_embeddings_wrapper,
+            embedding_function=gemini_embeddings,
             collection_name="butterySmooth"
         )
 
-        # Initialize retriever with a fallback value for 'k'
+        # Use the retriever from the vector store
         retriever = vectorstore_disk.as_retriever(search_kwargs={"k": 3})
 
-        # Set up the Language Model (LLM) using Google Gemini
+        # Set up the Google Gemini Pro LLM
         llm = ChatGoogleGenerativeAI(
             model="gemini-pro",
-            handle_parsing_errors=True,
             temperature=0.2,
             top_p=0.85,
-            max_tokens=200,
+            max_tokens=200
         )
 
-        # Set up DuckDuckGo Search Tool
+        # DuckDuckGo Search Tool
         ddg_search = DuckDuckGoSearchAPIWrapper()
 
-        # Define tools including the retriever
+        # Define tools including retriever
         tools = [
             Tool(
                 name="DuckDuckGo Search",
@@ -309,19 +824,19 @@ async def get_response(user_message: str) -> str:
             create_retriever_tool(
                 retriever,
                 name="Knowledge Base",
-                description="Use for itinerary generation for Kashmir."
+                description="Use for information retrieval"
             )
         ]
 
         # Conversation history as a list of previous interactions
         conversation_history = []
 
-        # Define Prompt Template
+        # Define the prompt template
         FORMAT_INSTRUCTIONS = """
-        Generate a response to user query:
+        Generate a response to the user query:
         {query}
 
-        Use this chat history:
+        Use this chat history if relevant:
         {chat_history}
 
         Use tools if needed:
@@ -333,17 +848,17 @@ async def get_response(user_message: str) -> str:
         Final Answer: <answer>
         '''
         """
-        PREFIX = "You are an intelligent assistant named Kashmiri Guide, created by Saqlain Naqshi."
+        PREFIX = "You are an intelligent assistant named Kashmiri Guide."
         SUFFIX = "Begin!\n\nInstructions: {input}\n{agent_scratchpad}"
 
         prompt = PromptTemplate(
             template=FORMAT_INSTRUCTIONS,
-            input_variables=["query", "chat_history"],
+            input_variables=["query", "chat_history"]
         )
 
-        # Initialize the agent with tools and LLM
+        # Initialize the conversational agent
         agent = initialize_agent(
-            tools,
+            tools=tools,
             llm=llm,
             agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
             verbose=True,
@@ -357,12 +872,11 @@ async def get_response(user_message: str) -> str:
             chat_history=conversation_history or "No previous history."
         )
 
-        # Invoke the agent and get the response
+        # Get the response from the agent
         result = agent.invoke({"input": formatted_prompt})
         response = result.get("output", "No output generated.")
 
     except Exception as e:
-        # Log any errors to assist debugging
         logging.error(f"Error generating response: {str(e)}")
         response = f"Error: {str(e)}"
 
