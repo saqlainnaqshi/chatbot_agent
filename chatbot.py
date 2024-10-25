@@ -309,7 +309,7 @@ async def get_response(user_message: str) -> str:
 
         # Define the prompt template
         FORMAT_INSTRUCTIONS = """
-        Generate a response to the user query:
+        Generate a response to the user query if asked for itinerary for kashmir use Knowledge Base first then other tools:
         {query}
 
         Use this chat history if relevant:
@@ -323,8 +323,9 @@ async def get_response(user_message: str) -> str:
         Observation: <result>
         Final Answer: <answer>
         '''
+        if generated response is an itinerary then add this to it, itinerary: true/false
         """
-        PREFIX = "You are an intelligent assistant named Kashmiri Guide."
+        PREFIX = "You are an intelligent assistant to help the users and guide them. Your name is kashmiri guide and you have been designed and created by Saqlain Naqshi who is a web developer and an AI engineer at Gildware technologies."
         SUFFIX = "Begin!\n\nInstructions: {input}\n{agent_scratchpad}"
 
         prompt = PromptTemplate(
